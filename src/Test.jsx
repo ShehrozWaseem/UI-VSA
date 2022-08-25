@@ -15,21 +15,19 @@ import {
 
 import ReactAudioPlayer from "react-audio-player";
 import { onValue, ref as databaseRef } from "firebase/database";
-import Chart, { PieChart } from "./Chart";
+// import Chart from "./Chart";
 import home from "./assets/home.png";
 import { Link } from "react-router-dom";
 
-function Profile() {
+function Test() {
   const { currentUser } = useAuthValue();
   const [file, setFile] = useState("");
   const [percent, setPercent] = useState(0);
   const [data, setData] = useState([]);
   const [users, setUsers] = useState([]);
   const [user, setUser] = useState("/agent-1");
-  const [button, setButton] = useState(false);
-  const [emoData, showemoData] = useState([]);
+
   const [loader, setLoader] = useState(false);
-  const [loader2, setLoader2] = useState(false);
 
   function handleChange(event) {
     setFile(event.target.files[0]);
@@ -139,47 +137,14 @@ function Profile() {
   };
 
   const analyze = async ({ name, url }) => {
-    // console.log(name, url);
-    // ... promise
-    // let audioRef = ref(storage, url);
-    // const uurl = await getDownloadURL(audioRef);
-    showemoData([]);
-    setLoader2(true);
-    let blob = await fetch(url);
-    let test = await blob.blob();
-    var wavfromblob = new File([test], "test.wav");
-    console.log(wavfromblob);
-    const newData = new FormData();
-    newData.append("filename", null);
-    newData.append("file", wavfromblob);
-    fetch("http://127.0.0.1:8080/uploader", {
-      method: "POST",
-      // headers: {
-      //   "Content-Type": "application/json",
-      // },
-      // body: JSON.stringify(data),
-      body: newData,
-    }).then((response) => {
-      response.json().then((body) => {
-        console.log(body);
-        setLoader2(false);
-      });
-    });
-
-    // setShowData(showData);
-  };
-  const predictEmo = (e) => {
-    e.preventDefault();
     setLoader(true);
-    const result = fetch("http://127.0.0.1:8080/test")
-      .then((response) => response.json())
-      .then((responseData) => {
-        console.log(responseData);
-        setLoader(false);
-        showemoData(responseData);
-      });
-    console.log(result);
-    setButton(false);
+    console.log(name, url);
+    // ... promise
+
+    // TODO: to be placed in then block of promise
+    setTimeout(() => {
+      setLoader(false);
+    }, 3000);
   };
 
   const listItem = (callURL) => {
@@ -230,22 +195,6 @@ function Profile() {
         console.log(error.message);
       });
   };
-  const statsData = () => {
-    if (emoData) {
-      console.log(emoData);
-      var angry = 0;
-      var normal = 0;
-      for (let i = 0; i < emoData.length; i++) {
-        if (emoData[i].includes("angry")) {
-          angry = angry + 1;
-        } else {
-          normal = normal + 1;
-        }
-      }
-    }
-    return { angry, normal };
-  };
-  const emotionsCount = statsData();
 
   const fetchAudios = (callURL) => {
     setData([]);
@@ -254,6 +203,7 @@ function Profile() {
     openModal();
     listItem(callURL);
   };
+
   return (
     <div className="center">
       <div className="profile">
@@ -318,29 +268,16 @@ function Profile() {
                     >
                       Delete
                     </button>
-                    {!button ? (
-                      <button
-                        className="dummy"
-                        onClick={() => {
-                          setFile({ name, url });
-                          analyze({ name, url });
-                          openAnalyzeModal();
-                        }}
-                        disabled={button}
-                      >
-                        Analyze
-                      </button>
-                    ) : (
-                      <button
-                        className="dummy"
-                        onClick={(e) => {
-                          predictEmo(e);
-                          openAnalyzeModal();
-                        }}
-                      >
-                        Predict
-                      </button>
-                    )}
+                    <button
+                      className="dummy"
+                      onClick={() => {
+                        openAnalyzeModal();
+                        setFile({ name, url });
+                        analyze({ name, url });
+                      }}
+                    >
+                      Analyze
+                    </button>
                   </div>
 
                   <br />
@@ -353,11 +290,7 @@ function Profile() {
                   >
                     Delete
                   </button>
-                  {/* {button ? (
-                    <button className="dummy">Analyze</button>
-                  ) : (
-                    <button className="dummy">predictEmo</button>
-                  )} */}
+                  <button className="dummy">Analyze</button>
                 </div>
               </div>
             ))
@@ -429,38 +362,13 @@ function Profile() {
           <h1 style={{ marginBottom: "10px" }}>Analyzer</h1>
         </div>
         <div className="body">
-          {loader2 ? (
+          {loader ? (
             <div className="loader-container">
               <div className="loader"></div>
             </div>
           ) : (
-            emoData.length === 0 &&
-            !loader && (
-              <button
-                className="dummy"
-                onClick={(e) => {
-                  predictEmo(e);
-                  // openAnalyzeModal();
-                }}
-              >
-                Predict
-              </button>
-            )
-          )}
-
-          {loader && (
-            <div className="loader-container">
-              <div className="loader"></div>
-            </div>
-          )}
-          {!loader && emoData.length != 0 && (
             <>
               {/* <Chart /> */}
-
-              <div className="chart-container">
-                <PieChart data={emotionsCount} totalEmotions={emoData.length} />
-              </div>
-
               <br />
               {file && (
                 <ReactAudioPlayer
@@ -482,4 +390,4 @@ function Profile() {
   );
 }
 
-export default Profile;
+export default Test;

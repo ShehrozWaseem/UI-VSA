@@ -15,6 +15,7 @@ import Record from "./Record";
 import Home from "./Home";
 import Upload from "./Modal";
 import Modal2 from "./Modal2";
+import Test from "./Test";
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [timeActive, setTimeActive] = useState(false);
