@@ -30,6 +30,8 @@ function Profile() {
   const [emoData, showemoData] = useState([]);
   const [loader, setLoader] = useState(false);
   const [loader2, setLoader2] = useState(false);
+  const [error1, setError1] = useState(false);
+  const [error2, setError2] = useState(false);
 
   function handleChange(event) {
     setFile(event.target.files[0]);
@@ -139,6 +141,7 @@ function Profile() {
   };
 
   const analyze = async ({ name, url }) => {
+    setError1(false);
     // console.log(name, url);
     // ... promise
     // let audioRef = ref(storage, url);
@@ -159,16 +162,26 @@ function Profile() {
       // },
       // body: JSON.stringify(data),
       body: newData,
-    }).then((response) => {
-      response.json().then((body) => {
+    })
+      .then((response) => {
+        response.json();
+      })
+      .then((body) => {
         console.log(body);
         setLoader2(false);
+      })
+      .catch((err) => {
+        setError1(true);
+        alert("Uploading Failed: " + err.message);
+        setLoader2(false);
+        closeAnalyzeModal();
       });
-    });
 
     // setShowData(showData);
   };
   const predictEmo = (e) => {
+    setError1(false);
+    setError2(false);
     e.preventDefault();
     setLoader(true);
     const result = fetch("http://127.0.0.1:8080/test")
@@ -177,6 +190,12 @@ function Profile() {
         console.log(responseData);
         setLoader(false);
         showemoData(responseData);
+      })
+      .catch((err) => {
+        alert("Pediction Failed: " + err.message);
+        setError2(true);
+        setLoader(false);
+        closeAnalyzeModal();
       });
     console.log(result);
     setButton(false);
@@ -196,7 +215,7 @@ function Profile() {
         });
       })
       .catch((error) => {
-        alert(error.message);
+        alert("Audio fetchng Error :" + error.message);
       });
   };
 
@@ -227,7 +246,7 @@ function Profile() {
         setData((arr) => arr.filter((item) => item.url !== url));
       })
       .catch((error) => {
-        console.log(error.message);
+        alert("Delete Failed: " + error.message);
       });
   };
   const statsData = () => {
@@ -243,7 +262,10 @@ function Profile() {
         }
       }
     }
-    return { angry, normal };
+    var angry_per = Math.round((angry / emoData.length) * 100);
+    console.log((angry / emoData.length) * 100);
+
+    return { angry, normal, angry_per };
   };
   const emotionsCount = statsData();
 
@@ -308,9 +330,10 @@ function Profile() {
                     <ReactAudioPlayer
                       src={url}
                       controls
-                      style={{ width: "75%" }}
+                      style={{ width: "100%" }}
                     />
                   )}
+                  <br></br>
                   <div className="buttons">
                     <button
                       className="delete"
@@ -328,7 +351,7 @@ function Profile() {
                         }}
                         disabled={button}
                       >
-                        Analyze
+                        Upload To Server
                       </button>
                     ) : (
                       <button
@@ -435,16 +458,26 @@ function Profile() {
             </div>
           ) : (
             emoData.length === 0 &&
-            !loader && (
-              <button
-                className="dummy"
-                onClick={(e) => {
-                  predictEmo(e);
-                  // openAnalyzeModal();
-                }}
-              >
-                Predict
-              </button>
+            !loader &&
+            !error1 && (
+              <>
+                {file && (
+                  <ReactAudioPlayer
+                    src={file.url}
+                    controls
+                    style={{ width: "100%", margin: "auto" }}
+                  />
+                )}
+                <button
+                  className="dummy"
+                  onClick={(e) => {
+                    predictEmo(e);
+                    // openAnalyzeModal();
+                  }}
+                >
+                  Predict
+                </button>
+              </>
             )
           )}
 
@@ -468,6 +501,12 @@ function Profile() {
                   controls
                   style={{ width: "100%", margin: "auto" }}
                 />
+              )}
+              {emoData.length != 0 && emotionsCount.angry_per > 50 && (
+                <h3 className="alertt">
+                  ANGER DETECTED !!! <br></br> ANGER RATIO:{" "}
+                  {emotionsCount.angry_per}
+                </h3>
               )}
             </>
           )}

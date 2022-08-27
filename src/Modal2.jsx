@@ -29,6 +29,8 @@ function Modal2() {
   const [loader2, setLoader2] = useState(false);
   const [stop, setStop] = useState(false);
   const [clear, setClear] = useState(false);
+  const [error1, setError1] = useState(false);
+  const [error2, setError2] = useState(false);
   const [url, setURL] = useState("");
   const [showData, setShowData] = useState([]);
   const [myData, setmyData] = useState({ file: null, filename: null });
@@ -124,6 +126,7 @@ function Modal2() {
 
   const handleAudioStop = (data) => {
     // console.log("from stop button--> ", data);
+    setClear(false);
     setShowData([]);
     setAudioDetails({ audioDetails: data });
     console.log("DATA--->", data);
@@ -131,8 +134,12 @@ function Modal2() {
     setURL(url);
     var wavfromblob = new File([data.blob], "test.wav");
     console.log("wavvvv", wavfromblob);
-    if (wavfromblob.size < 10000) {
+    if (wavfromblob.size < 15000) {
       alert("Recorded Audio size is less. Please record again");
+      return;
+    }
+    if (clear) {
+      alert("You cleared the audio");
       return;
     }
     const newData = new FormData();
@@ -141,21 +148,38 @@ function Modal2() {
     fetch("http://127.0.0.1:8080/uploader", {
       method: "POST",
       body: newData,
-    }).then((response) => {
-      response.json().then((body) => {
+    })
+      .then((response) => {
+        response.json();
+      })
+      .then((body) => {
         console.log(body);
         setStop(true);
+        setError1(false);
+      })
+      .catch((err) => {
+        alert("Upload Failed: " + err.message);
+        setError1(true);
       });
-    });
   };
 
   const SubmitME = () => {
+    setError1(false);
     setShowData([]);
 
     setLoader2(true);
     const result = fetch("http://127.0.0.1:8080/test")
       .then((response) => response.json())
-      .then((responseData) => setShowData(responseData));
+      .then((responseData) => {
+        setShowData(responseData);
+        setError2(false);
+      })
+      .catch((err) => {
+        setError2(true);
+        console.log(err.message);
+        alert("Prediction Failed: " + err.message);
+        closeAnalyzeModal();
+      });
     console.log(result);
     setStop(false);
 
@@ -165,8 +189,14 @@ function Modal2() {
 
   const handleAudioUpload = (data) => {
     console.log(loader2);
-    if (stop) {
+    if (clear) {
+      alert("You cleared the audio. Please reacord again!");
+      return;
+    }
+
+    if (stop && !error1) {
       SubmitME();
+      // handleReset();
     } else {
       alert("Record/Stop the audio first");
     }
@@ -189,6 +219,10 @@ function Modal2() {
       },
     };
     setAudioDetails({ audioDetails: reset });
+    setURL("");
+    setStop(false);
+    setClear(true);
+
     // } else {
     //   alert("Record/Stop the audio first");
     // }
@@ -212,12 +246,12 @@ function Modal2() {
   const emotionsCount = statsData();
   return (
     <div className="center">
-      <div className="profile">
-        {/* <Link to="/">
-          <img alt="homepage" src={home} width="50px" />
+      <div></div>
+      <div className="recorder_bg">
+        <Link to="/">
+          <h2 className="he2">Return to Home screen</h2>
         </Link>
-        <h1>Try as a recorder</h1>
-        <br /> */}
+
         {/* <span className="show-modal" onClick={openFileModal}>
           Upload Audio
         </span> */}
@@ -237,7 +271,7 @@ function Modal2() {
               handleAudioUpload={(data) => {
                 setLoader2(true);
                 handleAudioUpload(data);
-                stop && openAnalyzeModal();
+                url && stop && !clear && openAnalyzeModal();
                 stop &&
                   setAudioDetails({
                     url: null,
@@ -250,18 +284,24 @@ function Modal2() {
                     },
                   });
               }}
-              handleCountDown={(data) => handleCountDown(data)}
+              handleCountDown={(data) => {
+                setClear(false);
+                handleCountDown(data);
+              }}
               handleReset={() => {
                 handleReset();
-                setStop(true);
+                setStop(false);
+                setClear(true);
               }}
               mimeTypeToUseWhenRecording={`audio/webm`} // For specific mimetype.
             />
-            <ReactAudioPlayer
-              src={audioDetails.url}
-              controls
-              style={{ width: "100%", margin: "auto" }}
-            />
+            {url && (
+              <ReactAudioPlayer
+                src={url}
+                controls
+                style={{ width: "100%", margin: "auto" }}
+              />
+            )}
           </>
           {/* <button
             className="upload-file"
@@ -346,16 +386,19 @@ function Modal2() {
             </div>
           )}
           {!loader2 && showData.length != 0 ? (
-            <div className="chart-container">
-              <PieChart data={emotionsCount} totalEmotions={showData.length} />
-              <>
-                <ReactAudioPlayer
-                  src={url}
-                  controls
-                  style={{ width: "100%", margin: "auto" }}
+            <>
+              <div className="chart-container">
+                <PieChart
+                  data={emotionsCount}
+                  totalEmotions={showData.length}
                 />
-              </>
-            </div>
+              </div>
+              <ReactAudioPlayer
+                src={url}
+                controls
+                style={{ width: "100%", margin: "auto" }}
+              />
+            </>
           ) : (
             <>
               {/* <Chart /> */}

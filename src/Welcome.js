@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import "./profile.css";
 import { useHistory } from "react-router-dom";
 import home from "./assets/home.png";
-
 function Welcome() {
   const history = useHistory();
 
@@ -21,7 +20,7 @@ function Welcome() {
             Record Audio
           </button>
           <button className="dummy" onClick={() => history.push("/profile")}>
-            Access Database
+            Supervisor's View
           </button>
         </div>
       </div>

@@ -32,7 +32,8 @@ function Upload() {
   const [val, setVal] = useState("");
   const [showData, setShowData] = useState([]);
   const [myData, setmyData] = useState({ file: null, filename: null });
-
+  const [error1, setError1] = useState(false);
+  const [error2, setError2] = useState(false);
   function handleChange(event) {
     setFile(event.target.files[0]);
     setmyData({ ...myData, file: event.target.files[0] });
@@ -111,6 +112,7 @@ function Upload() {
   });
   const uploadFile = (e) => {
     e.preventDefault();
+    setError1(false);
     setUpload(true);
     closeFileModal();
     // if (!file) {
@@ -142,13 +144,22 @@ function Upload() {
       // },
       // body: JSON.stringify(data),
       body: data,
-    }).then((response) => {
-      response.json().then((body) => {
-        console.log(body);
+    })
+      .then((response) => {
+        response.json().then((body) => {
+          console.log(body);
+          setError1(false);
+          // setFile("");
+        });
+      })
+      .catch((err) => {
+        alert("Upload Failed: " + err.message);
+        setError1(true);
+        setFile("");
       });
-    });
   };
   const showButton = (e) => {
+    // setError1(false)
     setLoader(true);
     e.preventDefault();
     const result = fetch("http://127.0.0.1:8080/test")
@@ -157,6 +168,12 @@ function Upload() {
         setShowData(responseData);
         setLoader(false);
         setUpload(false);
+        setError1(false);
+      })
+      .catch((err) => {
+        alert("Prediction Failed: " + err.message);
+        setError2(false);
+        closeAnalyzeModal();
       });
   };
   const statsData = () => {
@@ -184,28 +201,40 @@ function Upload() {
         </Link>
         <h1>Try as a user</h1>
         <br />
-        {/* <span className="show-modal" onClick={openFileModal}>
+
+        {
+          upload && file && !error1 && (
+            <>
+              {/* <span className="show-modal" onClick={openFileModal}>
+              Upload Audio
+            </span> */}
+              <span>{file && <>Selected file: {file.name}</>}</span>
+              <br />
+              {!error1 && (
+                <button
+                  className="upload-file"
+                  onClick={(e) => {
+                    showButton(e);
+                    openAnalyzeModal();
+                  }}
+                >
+                  Predict Emotions
+                </button>
+              )}
+            </>
+          )
+          // : <span></span>
+          // error1 && (
+          //   <span className="show-modal" onClick={openFileModal}>
+          //     Upload Audio
+          //   </span>
+
+          // )
+        }
+
+        <span className="show-modal" onClick={openFileModal}>
           Upload Audio
-        </span> */}
-        {upload && file ? (
-          <>
-            <span>{file && <>Selected file: {file.name}</>}</span>
-            <br />
-            <button
-              className="upload-file"
-              onClick={(e) => {
-                showButton(e);
-                openAnalyzeModal();
-              }}
-            >
-              Predict Emotions
-            </button>
-          </>
-        ) : (
-          <span className="show-modal" onClick={openFileModal}>
-            Upload Audio
-          </span>
-        )}
+        </span>
         {/* <span className="show-modal" onClick={openUserModal}>
           Live Audio Recorder
         </span> */}
