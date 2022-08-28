@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import "./profile.css";
 import { useHistory } from "react-router-dom";
-import home from "./assets/home.png";
+import ned from "./assets/ned.png";
 function Welcome() {
   const history = useHistory();
 
@@ -9,7 +9,7 @@ function Welcome() {
     <div className="center">
       <div className="profile">
         <Link to="/">
-          <img alt="homepage" src={home} width="50px" />
+          <img alt="homepage" src={ned} width="140px" />
         </Link>
         <h1>Welcome</h1>
         <div className="buttons">

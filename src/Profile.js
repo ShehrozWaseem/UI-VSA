@@ -3,6 +3,7 @@ import { useAuthValue } from "./AuthContext";
 import { signOut } from "firebase/auth";
 import { auth, database } from "./firebase";
 import { useEffect, useState } from "react";
+import ned from "./assets/ned.png";
 
 import { storage } from "./firebase";
 import {
@@ -449,6 +450,7 @@ function Profile() {
 
       <div className="analyzeModal hidden">
         <div className="navbar">
+          {/* <img alt="homepage" src={ned} width="100px" /> */}
           <h1 style={{ marginBottom: "10px" }}>Analyzer</h1>
         </div>
         <div className="body">
